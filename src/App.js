@@ -208,61 +208,61 @@ const App = () => {
           <div className="form-section" style={{ marginBottom: '20px' }}>
             <h4 style={{ margin: '0 0 15px 0', color: '#333' }}>Mobile Viewer Configuration</h4>
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-              <div className="form-group" style={{ marginBottom: '0' }}>
-                <label htmlFor="rowIdentifier">
-                  Row Identifier Column:
-                </label>
-                <select
-                  id="rowIdentifier"
-                  value={rowIdentifierColumn}
-                  onChange={(e) => setRowIdentifierColumn(e.target.value)}
-                  style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
-                >
-                  {columns.map((col) => (
-                    <option key={col.key} value={col.key}>
-                      {col.label} ({col.key})
-                    </option>
-                  ))}
-                </select>
-                <small style={{ color: '#666', fontSize: '12px' }}>
-                  Column used for row identification in mobile view
-                </small>
-              </div>
+            {/* Row Identifier Column - Full Width */}
+            <div className="form-group" style={{ marginBottom: '20px' }}>
+              <label htmlFor="rowIdentifier">
+                Row Identifier Column:
+              </label>
+              <select
+                id="rowIdentifier"
+                value={rowIdentifierColumn}
+                onChange={(e) => setRowIdentifierColumn(e.target.value)}
+                style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px', maxWidth: '400px' }}
+              >
+                {columns.map((col) => (
+                  <option key={col.key} value={col.key}>
+                    {col.label} ({col.key})
+                  </option>
+                ))}
+              </select>
+              <small style={{ color: '#666', fontSize: '12px', display: 'block', marginTop: '5px' }}>
+                Column used for row identification in mobile view
+              </small>
+            </div>
 
-              <div className="form-group" style={{ marginBottom: '0' }}>
-                <label htmlFor="filterTerm">
-                  Filter Search Term:
-                </label>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <input
-                    id="filterTerm"
-                    type="text"
-                    value={filterSearchTerm}
-                    onChange={(e) => setFilterSearchTerm(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && applyFilter()}
-                    placeholder="e.g., breakfast, recipe, etc."
-                    style={{ flex: 1, padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
+            {/* Filter Search Term - Full Width */}
+            <div className="form-group" style={{ marginBottom: '15px' }}>
+              <label htmlFor="filterTerm">
+                Filter Search Term:
+              </label>
+              <div style={{ display: 'flex', gap: '8px', maxWidth: '600px' }}>
+                <input
+                  id="filterTerm"
+                  type="text"
+                  value={filterSearchTerm}
+                  onChange={(e) => setFilterSearchTerm(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && applyFilter()}
+                  placeholder="e.g., breakfast, recipe, etc."
+                  style={{ flex: 1, padding: '10px', border: '1px solid #ddd', borderRadius: '4px', minWidth: '200px' }}
+                />
+                <button 
+                  onClick={applyFilter}
+                  style={{ padding: '10px 15px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                >
+                  Filter
+                </button>
+                {filterSearchTerm && (
                   <button 
-                    onClick={applyFilter}
-                    style={{ padding: '10px 15px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                    onClick={clearFilter}
+                    style={{ padding: '10px 15px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
                   >
-                    Filter
+                    Clear
                   </button>
-                  {filterSearchTerm && (
-                    <button 
-                      onClick={clearFilter}
-                      style={{ padding: '10px 15px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                    >
-                      Clear
-                    </button>
-                  )}
-                </div>
-                <small style={{ color: '#666', fontSize: '12px' }}>
-                  Show only rows containing this text
-                </small>
+                )}
               </div>
+              <small style={{ color: '#666', fontSize: '12px', display: 'block', marginTop: '5px' }}>
+                Show only rows containing this text
+              </small>
             </div>
 
             <div style={{ 
