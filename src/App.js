@@ -1,6 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import MobileTableViewer from './components/MobileTableViewer';
 
+// Cookie utility functions
+const setCookie = (name, value, days = 30) => {
+  const expires = new Date();
+  expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+  document.cookie = `${name}=${JSON.stringify(value)};expires=${expires.toUTCString()};path=/`;
+};
+
+const getCookie = (name) => {
+  const nameEQ = name + "=";
+  const ca = document.cookie.split(';');
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+    if (c.indexOf(nameEQ) === 0) {
+      try {
+        return JSON.parse(c.substring(nameEQ.length, c.length));
+      } catch (e) {
+        return null;
+      }
+    }
+  }
+  return null;
+};
+
 const App = () => {
   const [sheetData, setSheetData] = useState([]);
   const [columns, setColumns] = useState([]);
@@ -17,6 +41,67 @@ const App = () => {
   const [rowIdentifierColumn, setRowIdentifierColumn] = useState('');
   const [filterSearchTerm, setFilterSearchTerm] = useState('');
   const [filteredData, setFilteredData] = useState([]);
+  
+  // Recent sheets state
+  const [recentSheets, setRecentSheets] = useState([]);
+
+  // Load recent sheets from cookies on component mount
+  useEffect(() => {
+    const saved = getCookie('recentSheets');
+    if (saved && Array.isArray(saved)) {
+      setRecentSheets(saved);
+    }
+  }, []);
+
+  // Save a sheet to recent sheets
+  const saveToRecentSheets = (id, name, data, spreadsheetTitle) => {
+    // Use the actual Google Sheets title, with fallback
+    let title = spreadsheetTitle || `${name} (${id.substring(0, 8)}...)`;
+    
+    // If we have the spreadsheet title, format it nicely
+    if (spreadsheetTitle && spreadsheetTitle !== 'Unknown Sheet') {
+      // If sheet name is not the default 'Sheet1', include it
+      if (name && name !== 'Sheet1') {
+        title = `${spreadsheetTitle} (${name})`;
+      } else {
+        title = spreadsheetTitle;
+      }
+    }
+
+    const newSheet = {
+      id,
+      name,
+      title,
+      lastAccessed: new Date().toISOString(),
+      rowCount: data ? data.length : 0
+    };
+
+    // Remove existing entry with same ID and name
+    const filtered = recentSheets.filter(sheet => !(sheet.id === id && sheet.name === name));
+    
+    // Add to beginning and limit to 5 recent sheets
+    const updated = [newSheet, ...filtered].slice(0, 5);
+    
+    setRecentSheets(updated);
+    setCookie('recentSheets', updated);
+  };
+
+  // Load a sheet from recent sheets
+  const loadRecentSheet = (sheet) => {
+    setSheetId(sheet.id);
+    setSheetName(sheet.name);
+    // Trigger fetch after state is set
+    setTimeout(() => {
+      fetchSheetData();
+    }, 100);
+  };
+
+  // Remove a sheet from recent sheets
+  const removeRecentSheet = (index) => {
+    const updated = recentSheets.filter((_, i) => i !== index);
+    setRecentSheets(updated);
+    setCookie('recentSheets', updated);
+  };
 
   const fetchSheetData = async () => {
     if (!sheetId.trim()) {
@@ -44,6 +129,9 @@ const App = () => {
       if (data.rows && Array.isArray(data.rows)) {
         setSheetData(data.rows);
         setFilteredData(data.rows); // Initialize filtered data with all data
+        
+        // Save to recent sheets on successful load (use spreadsheet title from API)
+        saveToRecentSheets(sheetId.trim(), sheetName.trim(), data.rows, data.title);
         
         // Create columns from the first row keys
         if (data.rows.length > 0) {
@@ -193,6 +281,109 @@ const App = () => {
           {loading ? 'Loading...' : 'Load Sheet Data'}
         </button>
       </div>
+
+      {/* Recent Sheets */}
+      {recentSheets.length > 0 && (
+        <div className="form-section" style={{ marginTop: '20px' }}>
+          <h3 style={{ marginBottom: '15px', color: '#333' }}>Recent Sheets</h3>
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            gap: '8px',
+            maxWidth: '800px'
+          }}>
+            {recentSheets.map((sheet, index) => (
+              <div 
+                key={`${sheet.id}-${sheet.name}-${index}`}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '12px',
+                  border: '1px solid #e0e0e0',
+                  borderRadius: '6px',
+                  backgroundColor: '#f9f9f9',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  ':hover': {
+                    backgroundColor: '#f0f0f0',
+                    borderColor: '#007bff'
+                  }
+                }}
+                onClick={() => loadRecentSheet(sheet)}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f0f0f0';
+                  e.currentTarget.style.borderColor = '#007bff';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f9f9f9';
+                  e.currentTarget.style.borderColor = '#e0e0e0';
+                }}
+              >
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ 
+                    fontWeight: 'bold', 
+                    fontSize: '14px', 
+                    color: '#333',
+                    marginBottom: '4px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {sheet.title}
+                  </div>
+                  <div style={{ 
+                    fontSize: '12px', 
+                    color: '#666',
+                    display: 'flex',
+                    gap: '12px',
+                    flexWrap: 'wrap'
+                  }}>
+                    <span>ID: {sheet.id.substring(0, 12)}...</span>
+                    <span>Sheet: {sheet.name}</span>
+                    <span>{sheet.rowCount} rows</span>
+                    <span>
+                      {new Date(sheet.lastAccessed).toLocaleDateString()} {new Date(sheet.lastAccessed).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeRecentSheet(index);
+                  }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#999',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    padding: '4px',
+                    marginLeft: '8px',
+                    borderRadius: '3px',
+                    transition: 'color 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#dc3545';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#999';
+                  }}
+                  title="Remove from recent sheets"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+          <div style={{ 
+            fontSize: '12px', 
+            color: '#666', 
+            marginTop: '8px' 
+          }}>
+            Click any recent sheet to load it, or ✕ to remove from history
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="error">
