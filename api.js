@@ -12,6 +12,12 @@ module.exports = function (req, res, next) {
             showRows = params.rows || true,
             showColumns = params.columns || true,
             url = 'https://sheets.googleapis.com/v4/spreadsheets/' + id + '/values/' + sheet + '?key=' + api_key;
+        
+        // Debug logging
+        console.log('Debug Info:');
+        console.log('- Default API key from file:', gauthkey);
+        console.log('- API key from params:', params.api_key);
+        console.log('- Final API key being used:', api_key);
         request(url, function (error, response, body) {
             if (!id) {
                 return res.status(response.statusCode).json('You must provide a sheet ID');
