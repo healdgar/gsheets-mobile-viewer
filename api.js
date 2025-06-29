@@ -1,4 +1,8 @@
-var gauthkey = 'ENTER API KEY HERE'; // https://developers.google.com/sheets/api/guides/authorizing#APIKey
+require('dotenv').config();
+
+// Google Sheets API key is loaded from environment variable GSHEETS_API_KEY.
+// Create a .env file in project root with GSHEETS_API_KEY=YOUR_KEY_HERE
+const gauthkey = process.env.GSHEETS_API_KEY || 'ENTER_API_KEY_HERE'; // https://developers.google.com/sheets/api/guides/authorizing#APIKey
 var request = require('request');
 
 module.exports = function (req, res, next) {

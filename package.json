@@ -12,7 +12,8 @@
     "react-dom": "^18.2.0",
     "react-swipeable": "^7.0.1",
     "react-feather": "^2.0.10",
-    "lucide-react": "^0.263.1"
+    "lucide-react": "^0.263.1",
+    "dotenv": "^16.3.1"
   },
   "devDependencies": {
     "@babel/core": "^7.22.0",

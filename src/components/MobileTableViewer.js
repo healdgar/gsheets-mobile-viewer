@@ -208,7 +208,7 @@ const MobileTableViewer = ({
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '15px 20px',
+    padding: '8px 20px',
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderBottom: '1px solid rgba(255, 255, 255, 0.2)'
   };
@@ -234,6 +234,7 @@ const MobileTableViewer = ({
   const contentStyle = {
     flex: 1,
     display: 'flex',
+    overflow: 'hidden',
     flexDirection: 'column',
     padding: '20px',
     overflow: 'hidden'
@@ -241,6 +242,7 @@ const MobileTableViewer = ({
 
   const cellDisplayStyle = {
     flex: 1,
+    //overflowY: 'auto',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
@@ -254,7 +256,7 @@ const MobileTableViewer = ({
   };
 
   const cellContentStyle = {
-    fontSize: '24px',
+    fontSize: 'clamp(14px, 4vw, 24px)',
     fontWeight: 'bold',
     marginBottom: '10px',
     wordBreak: 'break-word',
