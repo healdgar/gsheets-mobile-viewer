@@ -5,6 +5,8 @@ import { ArrowLeft, ArrowUp, ArrowRight, ArrowDown, X } from 'react-feather';
 const MobileTableViewer = ({ 
   tableData, 
   columns, 
+  rowIdentifierColumn,
+  filterSearchTerm,
   initialFocus = { rowIndex: 0, colIndex: 0 }, 
   onClose,
   theme 
@@ -25,13 +27,20 @@ const MobileTableViewer = ({
   const rowIdentifiers = useMemo(() => {
     if (!tableData || !Array.isArray(tableData)) return [];
     return tableData.map(row => {
-      const idColumns = ['id', 'name', 'title', 'key'];
-      const idColumn = idColumns.find(id => row[id] !== undefined);
-      const firstVisibleColumnKey = visibleColumns.length > 0 ? visibleColumns[0]?.key : undefined;
-      const identifier = idColumn ? row[idColumn] : (firstVisibleColumnKey && row[firstVisibleColumnKey] !== undefined ? row[firstVisibleColumnKey] : '');
+      // Use the configured row identifier column, fallback to auto-detection
+      let identifier = '';
+      if (rowIdentifierColumn && row[rowIdentifierColumn] !== undefined) {
+        identifier = row[rowIdentifierColumn];
+      } else {
+        // Fallback to auto-detection logic
+        const idColumns = ['id', 'name', 'title', 'key'];
+        const idColumn = idColumns.find(id => row[id] !== undefined);
+        const firstVisibleColumnKey = visibleColumns.length > 0 ? visibleColumns[0]?.key : undefined;
+        identifier = idColumn ? row[idColumn] : (firstVisibleColumnKey && row[firstVisibleColumnKey] !== undefined ? row[firstVisibleColumnKey] : '');
+      }
       return stripParenthetical(identifier);
     });
-  }, [tableData, visibleColumns]);
+  }, [tableData, visibleColumns, rowIdentifierColumn]);
 
   const getCurrentCellData = useCallback(() => {
     if (!tableData || currentFocus.rowIndex >= tableData.length || !visibleColumns || currentFocus.colIndex >= visibleColumns.length) {
@@ -299,7 +308,14 @@ const MobileTableViewer = ({
   return (
     <div style={viewerStyle} {...swipeHandlers}>
       <div style={headerStyle}>
-        <div style={titleStyle}>Mobile Table Viewer</div>
+        <div>
+          <div style={titleStyle}>Mobile Table Viewer</div>
+          {filterSearchTerm && (
+            <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.8)', marginTop: '2px' }}>
+              Filtered by: "{filterSearchTerm}" • {tableData?.length || 0} rows
+            </div>
+          )}
+        </div>
         <button style={closeButtonStyle} onClick={onClose}>
           <X size={24} />
         </button>

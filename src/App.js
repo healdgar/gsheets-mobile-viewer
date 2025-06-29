@@ -12,6 +12,11 @@ const App = () => {
   const [sheetId, setSheetId] = useState('');
   const [sheetName, setSheetName] = useState('Sheet1');
   const [apiKey, setApiKey] = useState('');
+  
+  // Mobile viewer configuration
+  const [rowIdentifierColumn, setRowIdentifierColumn] = useState('');
+  const [filterSearchTerm, setFilterSearchTerm] = useState('');
+  const [filteredData, setFilteredData] = useState([]);
 
   const fetchSheetData = async () => {
     if (!sheetId.trim()) {
@@ -38,6 +43,7 @@ const App = () => {
 
       if (data.rows && Array.isArray(data.rows)) {
         setSheetData(data.rows);
+        setFilteredData(data.rows); // Initialize filtered data with all data
         
         // Create columns from the first row keys
         if (data.rows.length > 0) {
@@ -48,7 +54,16 @@ const App = () => {
             visible: true
           }));
           setColumns(cols);
+          
+          // Auto-select row identifier column (prefer common identifier names)
+          const idColumns = ['id', 'name', 'title', 'recipe', 'item', 'description'];
+          const foundIdColumn = idColumns.find(id => firstRow[id] !== undefined);
+          const defaultIdColumn = foundIdColumn || Object.keys(firstRow)[0];
+          setRowIdentifierColumn(defaultIdColumn);
         }
+        
+        // Reset filter search term when new data loads
+        setFilterSearchTerm('');
       } else {
         throw new Error('Invalid data format received');
       }
@@ -80,8 +95,30 @@ const App = () => {
     setSheetId(extractedId);
   };
 
+  const applyFilter = () => {
+    if (!filterSearchTerm.trim()) {
+      setFilteredData(sheetData);
+      return;
+    }
+
+    const searchTerm = filterSearchTerm.toLowerCase().trim();
+    const filtered = sheetData.filter(row => {
+      // Search in all columns for the term
+      return Object.values(row).some(value => 
+        value && String(value).toLowerCase().includes(searchTerm)
+      );
+    });
+    
+    setFilteredData(filtered);
+  };
+
+  const clearFilter = () => {
+    setFilterSearchTerm('');
+    setFilteredData(sheetData);
+  };
+
   const openMobileViewer = () => {
-    if (sheetData.length > 0) {
+    if (filteredData.length > 0) {
       setIsMobileViewerActive(true);
     }
   };
@@ -165,16 +202,106 @@ const App = () => {
 
       {sheetData.length > 0 && (
         <div style={{ marginTop: '20px' }}>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            marginBottom: '15px'
-          }}>
-            <h3>Sheet Data ({sheetData.length} rows)</h3>
-            <button onClick={openMobileViewer}>
-              📱 Open Mobile View
-            </button>
+          <h3>Sheet Data ({sheetData.length} rows loaded)</h3>
+          
+          {/* Mobile Viewer Configuration */}
+          <div className="form-section" style={{ marginBottom: '20px' }}>
+            <h4 style={{ margin: '0 0 15px 0', color: '#333' }}>Mobile Viewer Configuration</h4>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+              <div className="form-group" style={{ marginBottom: '0' }}>
+                <label htmlFor="rowIdentifier">
+                  Row Identifier Column:
+                </label>
+                <select
+                  id="rowIdentifier"
+                  value={rowIdentifierColumn}
+                  onChange={(e) => setRowIdentifierColumn(e.target.value)}
+                  style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
+                >
+                  {columns.map((col) => (
+                    <option key={col.key} value={col.key}>
+                      {col.label} ({col.key})
+                    </option>
+                  ))}
+                </select>
+                <small style={{ color: '#666', fontSize: '12px' }}>
+                  Column used for row identification in mobile view
+                </small>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: '0' }}>
+                <label htmlFor="filterTerm">
+                  Filter Search Term:
+                </label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    id="filterTerm"
+                    type="text"
+                    value={filterSearchTerm}
+                    onChange={(e) => setFilterSearchTerm(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && applyFilter()}
+                    placeholder="e.g., breakfast, recipe, etc."
+                    style={{ flex: 1, padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                  <button 
+                    onClick={applyFilter}
+                    style={{ padding: '10px 15px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                  >
+                    Filter
+                  </button>
+                  {filterSearchTerm && (
+                    <button 
+                      onClick={clearFilter}
+                      style={{ padding: '10px 15px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+                <small style={{ color: '#666', fontSize: '12px' }}>
+                  Show only rows containing this text
+                </small>
+              </div>
+            </div>
+
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              padding: '10px 0'
+            }}>
+              <div style={{ color: '#666' }}>
+                {filteredData.length !== sheetData.length ? (
+                  <span>
+                    Showing <strong>{filteredData.length}</strong> of {sheetData.length} rows
+                    {filterSearchTerm && (
+                      <span style={{ marginLeft: '8px', padding: '2px 6px', background: '#e9ecef', borderRadius: '3px', fontSize: '12px' }}>
+                        "{filterSearchTerm}"
+                      </span>
+                    )}
+                  </span>
+                ) : (
+                  `Showing all ${sheetData.length} rows`
+                )}
+              </div>
+              
+              <button 
+                onClick={openMobileViewer}
+                disabled={filteredData.length === 0}
+                style={{ 
+                  padding: '12px 24px', 
+                  background: filteredData.length > 0 ? '#007bff' : '#ccc', 
+                  color: 'white', 
+                  border: 'none', 
+                  borderRadius: '4px', 
+                  cursor: filteredData.length > 0 ? 'pointer' : 'not-allowed',
+                  fontSize: '16px'
+                }}
+              >
+                📱 Open Mobile View ({filteredData.length} rows)
+              </button>
+            </div>
           </div>
 
           {/* Basic table preview */}
@@ -209,7 +336,7 @@ const App = () => {
                 </tr>
               </thead>
               <tbody>
-                {sheetData.slice(0, 10).map((row, index) => (
+                {filteredData.slice(0, 10).map((row, index) => (
                   <tr key={index} style={{ 
                     borderBottom: '1px solid #e9ecef',
                     backgroundColor: index % 2 === 0 ? '#fff' : '#f8f9fa'
@@ -229,7 +356,7 @@ const App = () => {
                 ))}
               </tbody>
             </table>
-            {sheetData.length > 10 && (
+            {filteredData.length > 10 && (
               <div style={{ 
                 padding: '10px', 
                 textAlign: 'center', 
@@ -238,7 +365,10 @@ const App = () => {
                 fontSize: '12px',
                 color: '#6c757d'
               }}>
-                Showing first 10 rows of {sheetData.length} total rows
+                Showing first 10 rows of {filteredData.length} filtered rows
+                {filteredData.length !== sheetData.length && (
+                  <span> (total: {sheetData.length})</span>
+                )}
               </div>
             )}
           </div>
@@ -247,8 +377,10 @@ const App = () => {
 
       {isMobileViewerActive && (
         <MobileTableViewer
-          tableData={sheetData}
+          tableData={filteredData}
           columns={columns}
+          rowIdentifierColumn={rowIdentifierColumn}
+          filterSearchTerm={filterSearchTerm}
           initialFocus={{ rowIndex: 0, colIndex: 0 }}
           onClose={closeMobileViewer}
           theme={{ mode: 'light' }}
