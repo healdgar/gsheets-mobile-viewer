@@ -46,9 +46,16 @@ module.exports = function (req, res, next) {
     const oauthToken = params.oauth_token;
     const api_key = params.api_key || gauthkey;
 
-    console.log('Debug Info:');
-    console.log('- Using OAuth token:', !!oauthToken);
-    console.log('- Using API key:', !!api_key);
+    console.log('--- Incoming API Request Debug ---');
+    console.log(`Sheet ID: ${id}, Sheet Tab: ${sheet}`);
+    console.log('- query param oauth_token present:', !!oauthToken);
+    console.log('- Electron desktop mode detected:', !!global.electronOAuth);
+    if (global.electronOAuth) {
+      const status = global.electronOAuth.getOAuthStatus();
+      console.log(`  • Electron OAuth configured: ${status.configured}`);
+      console.log(`  • Electron OAuth hasAuth: ${status.hasAuth}`);
+    }
+    console.log('- API key provided:', !!api_key);
 
     if (!id) {
       return res.status(400).json('You must provide a sheet ID');
