@@ -34,10 +34,31 @@ function initializeOAuth() {
 // Initialize OAuth on module load
 initializeOAuth();
 
+// Helper: extract pure Sheet ID from full Google Sheets URL or return original string
+function extractSheetId(raw) {
+  if (!raw) return raw;
+  // Look for /d/{ID} in URL
+  const match = raw.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  if (match && match[1]) return match[1];
+  // If the raw value looks like a full URL but regex failed, try split
+  if (raw.startsWith('http')) {
+    try {
+      const urlObj = new URL(raw);
+      const parts = urlObj.pathname.split('/');
+      const dIndex = parts.indexOf('d');
+      if (dIndex !== -1 && parts[dIndex + 1]) {
+        return parts[dIndex + 1];
+      }
+    } catch (e) {}
+  }
+  return raw; // fall back
+}
+
 module.exports = function (req, res, next) {
   try {
     const params = req.query;
-    const id = params.id;
+    const rawId = params.id;
+    const id = extractSheetId(rawId);
     const sheet = params.sheet;
     const query = params.q;
     const useIntegers = params.integers || true;
@@ -47,7 +68,7 @@ module.exports = function (req, res, next) {
     const api_key = params.api_key || gauthkey;
 
     console.log('--- Incoming API Request Debug ---');
-    console.log(`Sheet ID: ${id}, Sheet Tab: ${sheet}`);
+    console.log(`Sheet ID (raw): ${rawId} → (parsed): ${id}, Sheet Tab: ${sheet}`);
     console.log('- query param oauth_token present:', !!oauthToken);
     console.log('- Electron desktop mode detected:', !!global.electronOAuth);
     if (global.electronOAuth) {

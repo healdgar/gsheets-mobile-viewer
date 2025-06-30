@@ -5,11 +5,28 @@ require('dotenv').config();
 const gauthkey = process.env.GSHEETS_API_KEY || 'ENTER_API_KEY_HERE'; // https://developers.google.com/sheets/api/guides/authorizing#APIKey
 var request = require('request');
 
+// Helper: extract pure Sheet ID
+function extractSheetId(raw) {
+  if (!raw) return raw;
+  const m = raw.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  if (m && m[1]) return m[1];
+  if (raw.startsWith('http')) {
+    try {
+      const u = new URL(raw);
+      const parts = u.pathname.split('/');
+      const idx = parts.indexOf('d');
+      if (idx !== -1 && parts[idx + 1]) return parts[idx + 1];
+    } catch {}
+  }
+  return raw;
+}
+
 module.exports = function (req, res, next) {
     try {
         var params = req.query,
             api_key = params.api_key || gauthkey,
-            id = params.id,
+            rawId = params.id,
+            id = extractSheetId(rawId),
             sheet = params.sheet,
             query = params.q,
             useIntegers = params.integers || true,
@@ -21,6 +38,7 @@ module.exports = function (req, res, next) {
         // Debug logging
         console.log('Debug Info:');
         console.log('- Default API key from file:', gauthkey);
+        console.log(`- Sheet ID raw: ${rawId} → parsed: ${id}`);
         console.log('- API key from params:', params.api_key);
         console.log('- Final API key being used:', api_key);
         
