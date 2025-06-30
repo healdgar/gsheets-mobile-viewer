@@ -60,11 +60,14 @@ Send anyone a Google Sheet ID (or full URL) and this project spins up a gorgeous
 
 ## Advanced: Programmatic JSON API
 
-The Express backend still exposes the simplified GSX2JSON endpoint:
+The Express backend exposes the simplified GSX2JSON endpoint:
 
 ```http
-GET /api?id=<SHEET_ID>&sheet=<SHEET_NAME>&api_key=<YOUR_KEY>
+GET /sheets-viewer/api?id=<SHEET_ID>&sheet=<SHEET_NAME>&api_key=<YOUR_KEY>
 ```
+
+(For backward-compatibility `/api` continues to work.)
+
 Returns:
 ```json
 {

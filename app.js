@@ -21,8 +21,9 @@ app.use(bodyParser.json());
 // Serve static files from the React app build directory
 app.use(express.static(path.join(__dirname, 'dist')));
 
-// get api
-app.get('/api', api);
+// JSON API routes (legacy and namespaced)
+app.get('/api', api);                      // legacy root path
+app.get('/sheets-viewer/api', api);        // namespaced path for embedding on busy domains
 
 // OAuth configuration routes for desktop app
 app.get('/oauth/config', function(req, res) {
