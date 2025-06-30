@@ -112,13 +112,15 @@ const FocusedCell = ({ data, animationDirection, theme }) => {
       borderRadius: '8px',
       border: `2px solid ${theme?.tableBorderColor || '#ddd'}`, // Thicker border for visibility
       overflow: 'auto',
+      overflowY: 'auto',
+      overflowX: 'hidden',
       WebkitOverflowScrolling: 'touch',
       transition: 'transform 0.3s ease-out, opacity 0.3s ease-out',
       display: 'flex',
       flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-      textAlign: 'center',
+      justifyContent: 'flex-start',
+      alignItems: 'flex-start',
+      textAlign: 'left',
       fontSize: getDynamicFontSize(), // Use dynamic font size
       WebkitTouchCallout: 'none',
       WebkitUserSelect: 'text', // Allow text selection in the central cell
@@ -156,8 +158,8 @@ const FocusedCell = ({ data, animationDirection, theme }) => {
       return { ...baseContentStyles, textAlign: data.cellStyle.textAlign };
     }
     
-    // Default to center alignment if not specified in cellStyle
-    return { ...baseContentStyles, textAlign: 'center' };
+    // Default to left alignment if not specified in cellStyle
+    return { ...baseContentStyles, textAlign: 'left' };
   };
 
   return (

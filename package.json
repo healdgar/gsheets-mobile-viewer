@@ -6,26 +6,27 @@
   "author": "Nick Moreton",
   "dependencies": {
     "body-parser": "^1.x.x",
+    "dotenv": "^16.3.1",
     "express": "^4.x.x",
-    "request": "^2.69.0",
+    "lucide-react": "^0.263.1",
+    "markdown-it": "^13.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-swipeable": "^7.0.1",
     "react-feather": "^2.0.10",
-    "lucide-react": "^0.263.1",
-    "dotenv": "^16.3.1"
+    "react-swipeable": "^7.0.1",
+    "request": "^2.69.0"
   },
   "devDependencies": {
     "@babel/core": "^7.22.0",
     "@babel/preset-env": "^7.22.0",
     "@babel/preset-react": "^7.22.0",
+    "babel-loader": "^9.1.0",
+    "css-loader": "^6.8.0",
+    "html-webpack-plugin": "^5.5.0",
+    "style-loader": "^3.3.0",
     "webpack": "^5.88.0",
     "webpack-cli": "^5.1.0",
-    "babel-loader": "^9.1.0",
-    "html-webpack-plugin": "^5.5.0",
-    "webpack-dev-server": "^4.15.0",
-    "style-loader": "^3.3.0",
-    "css-loader": "^6.8.0"
+    "webpack-dev-server": "^4.15.0"
   },
   "license": "ISC",
   "scripts": {

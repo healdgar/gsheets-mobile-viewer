@@ -7,6 +7,8 @@
 npm install
 ```
 
+This includes the new `markdown-it` library for enhanced content rendering with full markdown support and line break preservation from Google Sheets.
+
 ### 2. Build the Frontend
 ```bash
 npm run build

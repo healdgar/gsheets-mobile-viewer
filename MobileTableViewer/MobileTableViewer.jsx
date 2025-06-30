@@ -224,9 +224,8 @@ const MobileTableViewer = ({
   }, [navigateUp, navigateRight, navigateDown, navigateLeft, onClose]);
 
   const swipeHandlers = useSwipeable({
-    onSwipedUp: () => navigateDown(),
+    // Only allow left-right swipe, disable up/down swipe
     onSwipedRight: () => navigateLeft(),
-    onSwipedDown: () => navigateUp(),
     onSwipedLeft: () => navigateRight(),
     preventDefaultTouchmoveEvent: true,
     trackMouse: false,
@@ -302,7 +301,7 @@ const MobileTableViewer = ({
         bottom: 0,
         width: '100%', // Ensure full viewport width
         height: '100%', // Ensure full viewport height
-        backgroundColor: theme?.mode === 'dark' ? 'rgba(30, 30, 30, 0.9)' : 'rgba(255, 255, 255, 0.9)', // Reduced alpha from 0.95 to 0.9
+        backgroundColor: theme?.mode === 'dark' ? 'rgb(30, 30, 30)' : 'rgb(255, 255, 255)', // Made background opaque
         color: theme?.blogTextColor || '#000000',
         display: 'flex',
         flexDirection: 'column',

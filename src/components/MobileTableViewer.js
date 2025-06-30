@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSwipeable } from 'react-swipeable';
 import { ArrowLeft, ArrowUp, ArrowRight, ArrowDown, X } from 'react-feather';
+import TextWithLinks from '../../DataTable/TextWithLinks';
 
 const MobileTableViewer = ({ 
   tableData, 
@@ -175,8 +176,7 @@ const MobileTableViewer = ({
   const swipeHandlers = useSwipeable({
     onSwipedLeft: navigateRight,
     onSwipedRight: navigateLeft,
-    onSwipedUp: navigateDown,
-    onSwipedDown: navigateUp,
+    // Disabled up/down swipes to allow for vertical scrolling
     preventDefaultTouchmoveEvent: true,
     trackMouse: true
   });
@@ -196,7 +196,7 @@ const MobileTableViewer = ({
     left: 0,
     width: '100%',
     height: '100%',
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    backgroundColor: 'rgb(0, 0, 0)',
     display: 'flex',
     flexDirection: 'column',
     zIndex: 1000,
@@ -242,17 +242,19 @@ const MobileTableViewer = ({
 
   const cellDisplayStyle = {
     flex: 1,
-    //overflowY: 'auto',
+    overflowY: 'auto',
+    overflowX: 'hidden',
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    textAlign: 'center',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    textAlign: 'left',
     padding: '20px',
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: '8px',
     margin: '10px 0',
-    border: '1px solid rgba(255, 255, 255, 0.1)'
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    WebkitOverflowScrolling: 'touch'
   };
 
   const cellContentStyle = {
@@ -356,7 +358,11 @@ const MobileTableViewer = ({
             {currentCellData.column} | {currentCellData.row}
           </div>
           <div style={cellContentStyle}>
-            {currentCellData.content || 'Empty'}
+            {currentCellData.content ? (
+              <TextWithLinks content={currentCellData.content} />
+            ) : (
+              'Empty'
+            )}
           </div>
           <div style={cellMetaStyle}>
             Row {currentCellData.rowIndex + 1} of {tableData?.length || 0} | 
