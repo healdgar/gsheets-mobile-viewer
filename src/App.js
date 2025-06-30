@@ -146,7 +146,7 @@ const App = () => {
         params.append('api_key', apiKey.trim());
       }
 
-      const response = await fetch(`/api?${params}`);
+      const response = await fetch(`api?${params}`);
       const data = await response.json();
 
       if (!response.ok) {
