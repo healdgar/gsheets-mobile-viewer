@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import MobileTableViewer from './components/MobileTableViewer';
+import OAuthManager from './components/OAuthManager';
 
 // Cookie utility functions
 const setCookie = (name, value, days = 30) => {
@@ -44,6 +45,10 @@ const App = () => {
   
   // Recent sheets state
   const [recentSheets, setRecentSheets] = useState([]);
+  
+  // OAuth state
+  const [hasOAuth, setHasOAuth] = useState(false);
+  const [isElectron, setIsElectron] = useState(false);
 
   // Load recent sheets from cookies on component mount
   useEffect(() => {
@@ -51,6 +56,9 @@ const App = () => {
     if (saved && Array.isArray(saved)) {
       setRecentSheets(saved);
     }
+    
+    // Check if running in Electron
+    setIsElectron(!!window.electronAPI?.isElectron);
   }, []);
 
   // Save a sheet to recent sheets
@@ -113,11 +121,30 @@ const App = () => {
     setError(null);
 
     try {
+      // Prepare request parameters
       const params = new URLSearchParams({
         id: sheetId.trim(),
-        sheet: sheetName.trim(),
-        ...(apiKey.trim() && { api_key: apiKey.trim() })
+        sheet: sheetName.trim()
       });
+
+      // Add authentication - prefer OAuth over API key
+      if (isElectron && hasOAuth && window.electronAPI) {
+        try {
+          const oauthToken = await window.electronAPI.getOAuthToken();
+          if (oauthToken) {
+            params.append('oauth_token', oauthToken);
+          } else if (apiKey.trim()) {
+            params.append('api_key', apiKey.trim());
+          }
+        } catch (oauthError) {
+          console.warn('Failed to get OAuth token, falling back to API key:', oauthError);
+          if (apiKey.trim()) {
+            params.append('api_key', apiKey.trim());
+          }
+        }
+      } else if (apiKey.trim()) {
+        params.append('api_key', apiKey.trim());
+      }
 
       const response = await fetch(`/api?${params}`);
       const data = await response.json();
@@ -221,6 +248,10 @@ const App = () => {
     }
   };
 
+  const handleOAuthChange = (isAuthenticated) => {
+    setHasOAuth(isAuthenticated);
+  };
+
   return (
     <div className="container">
       <div className="header">
@@ -281,6 +312,9 @@ const App = () => {
           {loading ? 'Loading...' : 'Load Sheet Data'}
         </button>
       </div>
+
+      {/* OAuth Manager - only show in Electron */}
+      <OAuthManager onAuthChange={handleOAuthChange} />
 
       {/* Recent Sheets */}
       {recentSheets.length > 0 && (

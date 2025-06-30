@@ -2,7 +2,8 @@
   "name": "gsx2json",
   "version": "1.0.0",
   "description": "Google Spreadsheet to JSON API app with mobile table viewer",
-  "main": "app.js",
+  "main": "electron/main.js",
+  "homepage": "./",
   "author": "Nick Moreton",
   "dependencies": {
     "body-parser": "^1.x.x",
@@ -14,7 +15,9 @@
     "react-dom": "^18.2.0",
     "react-feather": "^2.0.10",
     "react-swipeable": "^7.0.1",
-    "request": "^2.69.0"
+    "request": "^2.69.0",
+    "googleapis": "^132.0.0",
+    "electron-store": "^8.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.22.0",
@@ -26,12 +29,50 @@
     "style-loader": "^3.3.0",
     "webpack": "^5.88.0",
     "webpack-cli": "^5.1.0",
-    "webpack-dev-server": "^4.15.0"
+    "webpack-dev-server": "^4.15.0",
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "concurrently": "^8.2.0",
+    "wait-on": "^7.2.0"
   },
   "license": "ISC",
   "scripts": {
-    "start": "node app.js",
+    "start": "webpack serve --mode development",
     "dev": "webpack serve --mode development",
-    "build": "webpack --mode production"
+    "build": "webpack --mode production",
+    "electron": "electron electron/main.js",
+    "electron-dev": "concurrently \"npm start\" \"wait-on http://localhost:3000 && electron electron/main.js\"",
+    "electron-pack": "electron-builder",
+    "desktop": "npm run build && npm run electron",
+    "build-desktop": "npm run build && npm run electron-pack",
+    "dist": "npm run build && electron-builder --publish=never",
+    "server": "npm run build && node app.js"
+  },
+  "build": {
+    "appId": "com.gsx2json.mobile-viewer",
+    "productName": "Google Sheets Mobile Viewer",
+    "directories": {
+      "output": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "node_modules/**/*",
+      "app.js",
+      "api.js",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "icon": "electron/assets/icon.icns"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "electron/assets/icon.ico"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "electron/assets/icon.png"
+    }
   }
 }
